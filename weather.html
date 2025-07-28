@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Temperature Estimator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #eef6fb;
+    padding: 20px;
+    max-width: 480px;
+    margin: auto;
+  }
+  label {
+    font-weight: bold;
+    display: block;
+    margin: 10px 0 5px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+  }
+  input[type="number"]:focus {
+    border-color: #0077cc;
+    outline: none;
+  }
+  button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    background-color: #0077cc;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #005fa3;
+  }
+  .result {
+    margin-top: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    font-size: 1.1em;
+    overflow-x: auto;
+  }
+  .confidence-bar {
+    height: 15px;
+    border-radius: 8px;
+    background: #ddd;
+    margin: 6px 0 12px;
+    overflow: hidden;
+  }
+  .confidence-fill {
+    height: 100%;
+    background: #4caf50;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<h2>Temperature Estimator</h2>
+
+<label for="weatherRating">Weather Rating (Subtract your weather percentile from 100):</label>
+<input type="number" id="weatherRating" min="1" max="100" step="1" />
+
+<button onclick="estimateTemperature()">Estimate Temperature</button>
+
+<div id="result" class="result" style="display:none;"></div>
+
+<script>
+  function estimateTemperature() {
+    const weatherRating = Number(document.getElementById('weatherRating').value);
+    const resultDiv = document.getElementById('result');
+
+    if (isNaN(weatherRating) || weatherRating < 1 || weatherRating > 100) {
+      alert('Please enter a weather rating between 1 and 100.');
+      resultDiv.style.display = 'none';
+      return;
+    }
+
+    // Calculate annual average temp scaled -30 to 40 °C by rating
+    const annualTemp = -30 + ((weatherRating - 1) / 99) * 70;
+
+    // Auto seasonality: Inverse relation to rating, scaled 3 (hot) to 23 (cold)
+    // Hot places = low seasonality, cold places = high seasonality
+    const seasonality = 3 + (100 - weatherRating) * 0.2;
+
+    // Comfort index formula (max 100)
+    let comfortIndex = 100 - Math.abs(annualTemp - 22) * 2 - seasonality * 1.5;
+    comfortIndex = Math.max(0, Math.min(comfortIndex, 100));
+
+    // Comfort description
+    let comfortDesc = '';
+    if (comfortIndex > 80) comfortDesc = 'Very Comfortable 🌞';
+    else if (comfortIndex > 60) comfortDesc = 'Comfortable 🙂';
+    else if (comfortIndex > 40) comfortDesc = 'Moderate ⛅';
+    else if (comfortIndex > 20) comfortDesc = 'Harsh ❄️';
+    else comfortDesc = 'Extreme Weather ⚡';
+
+    // Clothing suggestion
+    let clothingSuggestion = '';
+    if (comfortIndex > 80) {
+      clothingSuggestion = 'Light clothes year-round (t-shirts, shorts)';
+    } else if (comfortIndex > 60) {
+      clothingSuggestion = 'Light clothes with occasional jackets';
+    } else if (comfortIndex > 40) {
+      clothingSuggestion = 'Layers recommended: sweaters and raincoats';
+    } else if (comfortIndex > 20) {
+      clothingSuggestion = 'Warm jackets, scarves, and gloves needed';
+    } else {
+      clothingSuggestion = 'Heavy coats and thermal gear essential';
+    }
+
+    // Heating/Cooling need
+    let climateControl = '';
+    if (annualTemp < 15) {
+      climateControl = 'Mostly Heating Needed 🔥';
+    } else if (annualTemp > 25) {
+      climateControl = 'Mostly Cooling Needed ❄️';
+    } else {
+      climateControl = 'Minimal Climate Control Needed 🌬️';
+    }
+
+    // Seasonal Extremes Simulation
+    // Typical winter low = average - 1.5 * seasonality + small random noise (-2 to +2)
+    const winterLow = annualTemp - 1.5 * seasonality + (Math.random() * 4 - 2);
+    // Typical summer high = average + 1.5 * seasonality + small random noise (-2 to +2)
+    const summerHigh = annualTemp + 1.5 * seasonality + (Math.random() * 4 - 2);
+
+    // All-time record estimate = seasonal extreme ± ~3 std dev (std dev ~0.3*seasonality)
+    const stdDev = 0.3 * seasonality;
+    const recordLow = winterLow - 3 * stdDev;
+    const recordHigh = summerHigh + 3 * stdDev;
+
+    // Confidence indicator: higher near edges (rating <20 or >80), lower near mid
+    // Map rating 1-100 to confidence 100% at edges, 40% at middle (50)
+    const confidence = Math.min(100, Math.max(40,
+      40 + 60 * (Math.abs(weatherRating - 50) / 50)
+    ));
+
+    // Render confidence bar HTML
+    const confidenceBar = `
+      <div><strong>Estimate Confidence:</strong> ${confidence.toFixed(0)}%</div>
+      <div class="confidence-bar"><div class="confidence-fill" style="width: ${confidence}%;"></div></div>
+    `;
+
+    // Helper to round nicely
+    const round = v => v.toFixed(1);
+
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      ${confidenceBar}
+      <strong>Estimated Annual Average Temperature:</strong> ${round(annualTemp)} °C<br />
+      <strong>Seasonality (temp range estimate):</strong> ±${round(seasonality)} °C<br />
+      <strong>Comfort Index:</strong> ${comfortIndex.toFixed(0)} / 100 — ${comfortDesc}<br />
+      <strong>Clothing Suggestion:</strong> ${clothingSuggestion}<br />
+      <strong>Heating/Cooling Needs:</strong> ${climateControl}<br /><br />
+      
+      <strong>Typical Winter Low:</strong> ${round(winterLow)} °C<br />
+      <strong>Typical Summer High:</strong> ${round(summerHigh)} °C<br />
+      <strong>All-Time Record Low (estimate):</strong> ${round(recordLow)} °C<br />
+      <strong>All-Time Record High (estimate):</strong> ${round(recordHigh)} °C
+    `;
+  }
+</script>
+
+</body>
+</html>
