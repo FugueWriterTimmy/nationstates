@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Currency Converter</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .currency-box {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 1em;
+    }
+
+    button {
+      background: #2d89ef;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #1c6ed2;
+    }
+
+    .small-btn {
+      padding: 5px 10px;
+      font-size: 0.9em;
+      margin-left: 5px;
+      margin-top: 4px;
+    }
+
+    .edit-row {
+      display: flex;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    .edit-row input {
+      flex: 1;
+      margin-right: 6px;
+    }
+
+    #conversionResults p {
+      margin: 5px 0;
+      padding: 6px;
+      background: #f0f8ff;
+      border-radius: 6px;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+
+    .currency-list {
+      margin-top: 10px;
+    }
+
+    .currency-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .currency-item span {
+      flex-grow: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Custom Currency Converter</h1>
+
+    <div class="currency-box">
+      <h2>Add / Edit Currency</h2>
+      <input id="currencyName" placeholder="Currency Name (e.g. ZorkCoin)" />
+      <input id="currencyValue" type="number" step="0.0001" placeholder="Value relative to Base (Base = 1)" />
+      <button onclick="addOrUpdateCurrency()">Add or Update Currency</button>
+    </div>
+
+    <div class="currency-box">
+      <h2>Convert</h2>
+      <select id="fromCurrency"></select>
+      <input id="amount" type="number" step="0.01" placeholder="Amount" />
+      <button onclick="convert()">Convert</button>
+      <div id="conversionResults"></div>
+    </div>
+
+    <div class="currency-box">
+      <h2>All Currencies</h2>
+      <div class="currency-list" id="currencyList"></div>
+    </div>
+
+    <div class="currency-box">
+      <h2>Currency Value Graph</h2>
+      <canvas id="currencyChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let currencies = JSON.parse(localStorage.getItem("currencies")) || { "Base": 1 };
+
+    const chartData = {
+      labels: [],
+      datasets: [{
+        label: "Value (relative to Base)",
+        data: [],
+        backgroundColor: "#2d89ef"
+      }]
+    };
+
+    const ctx = document.getElementById("currencyChart").getContext("2d");
+    const currencyChart = new Chart(ctx, {
+      type: "bar",
+      data: chartData,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    function saveCurrencies() {
+      localStorage.setItem("currencies", JSON.stringify(currencies));
+    }
+
+    function updateCurrencyOptions() {
+      const fromSelect = document.getElementById("fromCurrency");
+      fromSelect.innerHTML = "";
+      for (const name in currencies) {
+        fromSelect.add(new Option(name, name));
+      }
+    }
+
+    function updateCurrencyList() {
+      const list = document.getElementById("currencyList");
+      list.innerHTML = "";
+
+      for (const name in currencies) {
+        if (name === "Base") continue;
+
+        const row = document.createElement("div");
+        row.className = "currency-item";
+
+        const label = document.createElement("span");
+        label.textContent = `${name} = ${currencies[name]}`;
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.className = "small-btn";
+        editBtn.onclick = () => {
+          document.getElementById("currencyName").value = name;
+          document.getElementById("currencyValue").value = currencies[name];
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "small-btn";
+        deleteBtn.onclick = () => {
+          if (confirm(`Delete "${name}"?`)) {
+            delete currencies[name];
+            saveCurrencies();
+            refreshUI();
+          }
+        };
+
+        row.appendChild(label);
+        row.appendChild(editBtn);
+        row.appendChild(deleteBtn);
+        list.appendChild(row);
+      }
+    }
+
+    function updateChart() {
+      chartData.labels = Object.keys(currencies);
+      chartData.datasets[0].data = Object.values(currencies);
+      currencyChart.update();
+    }
+
+    function refreshUI() {
+      updateCurrencyOptions();
+      updateCurrencyList();
+      updateChart();
+    }
+
+    function addOrUpdateCurrency() {
+      const name = document.getElementById("currencyName").value.trim();
+      const value = parseFloat(document.getElementById("currencyValue").value);
+
+      if (!name || isNaN(value) || value <= 0) {
+        alert("Please enter a valid name and a positive value.");
+        return;
+      }
+
+      currencies[name] = value;
+      saveCurrencies();
+      refreshUI();
+
+      document.getElementById("currencyName").value = "";
+      document.getElementById("currencyValue").value = "";
+    }
+
+    function convert() {
+      const from = document.getElementById("fromCurrency").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const resultsBox = document.getElementById("conversionResults");
+      resultsBox.innerHTML = "";
+
+      if (isNaN(amount)) {
+        alert("Please enter a valid amount.");
+        return;
+      }
+
+      for (const to in currencies) {
+        if (to === from) continue;
+        const result = (amount * currencies[from]) / currencies[to];
+        const p = document.createElement("p");
+        p.textContent = `${amount} ${from} = ${result.toFixed(4)} ${to}`;
+        resultsBox.appendChild(p);
+      }
+    }
+
+    refreshUI();
+  </script>
+</body>
+</html>
