@@ -87,27 +87,20 @@
       const health = Number(document.getElementById('health').value);
       const hdi = Number(document.getElementById('hdi').value);
 
-      // Normalize income on a scale of 0-100k for the formula (adjust as needed)
-      const incomeNorm = Math.min(income, 100000) / 1000; // 0 to 100
+      const incomeNorm = Math.min(income, 100000) / 1000;
 
-      // Base average heights in cm (rough global averages)
       const baseMale = 171;
       const baseFemale = 160;
 
-      // Adjusted formula weights (sum to 1)
       const wLifespan = 0.30;
       const wIncome = 0.10;
       const wSafety = 0.25;
       const wHealth = 0.25;
       const wHdi = 0.10;
 
-      // Validate HDI input is between 0 and 1, else default 0.5
       const hdiClamped = hdi >= 0 && hdi <= 1 ? hdi : 0.5;
-
-      // Scale HDI to 0-100 scale for consistency
       const hdiNorm = hdiClamped * 100;
 
-      // Calculate a "health index" composite WITHOUT max limit
       const healthIndex =
         lifespan * wLifespan +
         incomeNorm * wIncome +
@@ -115,28 +108,20 @@
         health * wHealth +
         hdiNorm * wHdi;
 
-      const minIndex = 50;
-      const normalizedIndex = healthIndex < minIndex ? minIndex : healthIndex;
+      // Removed the minimum clamp to allow values below 50
+      const scaleFactor = healthIndex - 50;
 
-      // Scaling factors for height increase per healthIndex point above minIndex
-      const scalePerPointMale = 0.3;   // 0.3 cm increase per point
-      const scalePerPointFemale = 0.24; // proportional to male scale
+      const scalePerPointMale = 0.3;
+      const scalePerPointFemale = 0.24;
 
-      const scaleFactor = normalizedIndex - minIndex;
-
-      // Calculate heights with free scaling (no caps)
       const maleHeight = baseMale + scaleFactor * scalePerPointMale;
       const femaleHeight = baseFemale + scaleFactor * scalePerPointFemale;
-
-      // Calculate average height
       const avgHeight = (maleHeight + femaleHeight) / 2;
 
-      // Round to 1 decimal place
       const maleRounded = maleHeight.toFixed(1);
       const femaleRounded = femaleHeight.toFixed(1);
       const avgRounded = avgHeight.toFixed(1);
 
-      // Display results
       const resultDiv = document.getElementById('result');
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
