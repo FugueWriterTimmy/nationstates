@@ -67,7 +67,6 @@
       <th>Male Height (m)</th>
       <th>Female Height (m)</th>
       <th>Vehicles/1000</th>
-      <th>Household Size</th>
       <th>Delete</th>
     </tr>
   </thead>
@@ -88,7 +87,6 @@
     <input type="number" placeholder="Male Height (m)" step="any" id="maleHeight" />
     <input type="number" placeholder="Female Height (m)" step="any" id="femaleHeight" />
     <input type="number" placeholder="Vehicles/1000" step="any" id="vehicles" />
-    <input type="number" placeholder="Household Size" step="0.1" id="household" />
   </div>
   <button class="btn" type="submit">Add Country</button>
 </form>
@@ -143,7 +141,7 @@
     const values = [
       'name', 'capital', 'leader', 'language',
       'currency', 'hdi', 'iq', 'temp',
-      'maleHeight', 'femaleHeight', 'vehicles', 'household'
+      'maleHeight', 'femaleHeight', 'vehicles'
     ].map(id => document.getElementById(id).value);
     addRow(values);
     form.reset();
