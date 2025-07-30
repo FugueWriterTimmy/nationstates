@@ -61,6 +61,7 @@
       <th>Leader</th>
       <th>Official Language</th>
       <th>Currency Value</th>
+      <th>Lifespan</th>
       <th>HDI</th>
       <th>Avg IQ</th>
       <th>Avg Temp (°C)</th>
@@ -81,6 +82,7 @@
     <input type="text" placeholder="Leader" id="leader" />
     <input type="text" placeholder="Language" id="language" />
     <input type="number" placeholder="Currency Value" step="any" id="currency" />
+    <input type="number" placeholder="Lifespan" step="0.01" id="lifespan" />
     <input type="number" placeholder="HDI" step="0.001" id="hdi" />
     <input type="number" placeholder="Avg IQ" step="any" id="iq" />
     <input type="number" placeholder="Avg Temp" step="any" id="temp" />
@@ -140,7 +142,7 @@
     e.preventDefault();
     const values = [
       'name', 'capital', 'leader', 'language',
-      'currency', 'hdi', 'iq', 'temp',
+      'currency', 'lifespan', 'hdi', 'iq', 'temp',
       'maleHeight', 'femaleHeight', 'vehicles'
     ].map(id => document.getElementById(id).value);
     addRow(values);
