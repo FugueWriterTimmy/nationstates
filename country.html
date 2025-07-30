@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Country Stat Tracker - Decimal Friendly</title>
+<title>Country Stat Tracker</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -51,7 +51,7 @@
 </head>
 <body>
 
-<h1>World Country Stat Tracker</h1>
+<h1>Country Display</h1>
 
 <table id="countryTable" spellcheck="false">
   <thead>
@@ -61,13 +61,13 @@
       <th>Leader</th>
       <th>Official Language</th>
       <th>Currency Value</th>
-      <th>Lifespan</th>
       <th>HDI</th>
       <th>Avg IQ</th>
       <th>Avg Temp (°C)</th>
       <th>Male Height (m)</th>
       <th>Female Height (m)</th>
       <th>Vehicles/1000</th>
+      <th>Lifespan</th>
       <th>Delete</th>
     </tr>
   </thead>
@@ -82,13 +82,13 @@
     <input type="text" placeholder="Leader" id="leader" />
     <input type="text" placeholder="Language" id="language" />
     <input type="number" placeholder="Currency Value" step="any" id="currency" />
-    <input type="number" placeholder="Lifespan" step="0.01" id="lifespan" />
     <input type="number" placeholder="HDI" step="0.001" id="hdi" />
     <input type="number" placeholder="Avg IQ" step="any" id="iq" />
     <input type="number" placeholder="Avg Temp" step="any" id="temp" />
     <input type="number" placeholder="Male Height (m)" step="any" id="maleHeight" />
     <input type="number" placeholder="Female Height (m)" step="any" id="femaleHeight" />
     <input type="number" placeholder="Vehicles/1000" step="any" id="vehicles" />
+    <input type="number" placeholder="Lifespan" step="any" id="lifespan" />
   </div>
   <button class="btn" type="submit">Add Country</button>
 </form>
@@ -97,7 +97,6 @@
   const form = document.getElementById('countryForm');
   const tbody = document.getElementById('countryBody');
 
-  // Save raw text from each cell, exactly as typed, to localStorage
   function saveToStorage() {
     const data = [];
     tbody.querySelectorAll('tr').forEach(row => {
@@ -107,13 +106,11 @@
     localStorage.setItem('countries', JSON.stringify(data));
   }
 
-  // Load from localStorage and populate table
   function loadFromStorage() {
     const data = JSON.parse(localStorage.getItem('countries') || '[]');
     data.forEach(entry => addRow(entry));
   }
 
-  // Add row with editable cells and delete button
   function addRow(values) {
     const row = document.createElement('tr');
     values.forEach(value => {
@@ -137,20 +134,18 @@
     tbody.appendChild(row);
   }
 
-  // On form submit, add row and save
   form.onsubmit = e => {
     e.preventDefault();
     const values = [
       'name', 'capital', 'leader', 'language',
-      'currency', 'lifespan', 'hdi', 'iq', 'temp',
-      'maleHeight', 'femaleHeight', 'vehicles'
+      'currency', 'hdi', 'iq', 'temp',
+      'maleHeight', 'femaleHeight', 'vehicles', 'lifespan'
     ].map(id => document.getElementById(id).value);
     addRow(values);
     form.reset();
     saveToStorage();
   };
 
-  // Save on any edits in table cells
   tbody.addEventListener('input', saveToStorage);
 
   loadFromStorage();
