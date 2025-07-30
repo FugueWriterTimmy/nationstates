@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Country Stat Tracker - Decimal Support</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #eef2f7;
+  }
+  h1 {
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background: #0077cc;
+    color: white;
+  }
+  td[contenteditable="true"] {
+    background-color: #fcfcfc;
+    cursor: text;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .btn {
+    padding: 6px 12px;
+    margin-top: 10px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .btn:hover {
+    background: #005fa3;
+  }
+</style>
+</head>
+<body>
+
+<h1>World Country Stat Tracker</h1>
+
+<table id="countryTable" spellcheck="false">
+  <thead>
+    <tr>
+      <th>Country</th>
+      <th>Capital</th>
+      <th>Leader</th>
+      <th>Official Language</th>
+      <th>Currency Value</th>
+      <th>HDI</th>
+      <th>Avg IQ</th>
+      <th>Avg Temp (°C)</th>
+      <th>Male Height (m)</th>
+      <th>Female Height (m)</th>
+      <th>Vehicles/1000</th>
+      <th>Household Size</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody id="countryBody"></tbody>
+</table>
+
+<h2>Add a Country</h2>
+<form id="countryForm">
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+    <input type="text" placeholder="Country" id="name" required />
+    <input type="text" placeholder="Capital" id="capital" />
+    <input type="text" placeholder="Leader" id="leader" />
+    <input type="text" placeholder="Language" id="language" />
+    <input type="number" placeholder="Currency Value" step="any" id="currency" />
+    <input type="number" placeholder="HDI" step="0.001" id="hdi" />
+    <input type="number" placeholder="Avg IQ" step="any" id="iq" />
+    <input type="number" placeholder="Avg Temp" step="any" id="temp" />
+    <input type="number" placeholder="Male Height (m)" step="any" id="maleHeight" />
+    <input type="number" placeholder="Female Height (m)" step="any" id="femaleHeight" />
+    <input type="number" placeholder="Vehicles/1000" step="any" id="vehicles" />
+    <input type="number" placeholder="Household Size" step="0.1" id="household" />
+  </div>
+  <button class="btn" type="submit">Add Country</button>
+</form>
+
+<script>
+  const form = document.getElementById('countryForm');
+  const tbody = document.getElementById('countryBody');
+
+  // List of numeric columns indices (0-based)
+  // Adjust according to columns:
+  // Country(0), Capital(1), Leader(2), Language(3), Currency(4), HDI(5),
+  // IQ(6), Temp(7), MaleHeight(8), FemaleHeight(9), Vehicles(10), Household(11)
+  const numericCols = [4,5,6,7,8,9,10,11];
+
+  function saveToStorage() {
+    const data = [];
+    tbody.querySelectorAll('tr').forEach(row => {
+      const cells = Array.from(row.querySelectorAll('td')).slice(0, -1);
+      const rowData = cells.map((cell, i) => {
+        // If numeric col, parse float or save empty string
+        if (numericCols.includes(i)) {
+          const val = parseFloat(cell.textContent.trim());
+          return isNaN(val) ? '' : val.toString();
+        } else {
+          return cell.textContent.trim();
+        }
+      });
+      data.push(rowData);
+    });
+    localStorage.setItem('countries', JSON.stringify(data));
+  }
+
+  function loadFromStorage() {
+    const data = JSON.parse(localStorage.getItem('countries') || '[]');
+    data.forEach(entry => addRow(entry));
+  }
+
+  function addRow(values) {
+    const row = document.createElement('tr');
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      cell.contentEditable = "true";
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '✖';
+    deleteBtn.className = 'btn';
+    deleteBtn.onclick = () => {
+      row.remove();
+      saveToStorage();
+    };
+    const deleteCell = document.createElement('td');
+    deleteCell.appendChild(deleteBtn);
+    row.appendChild(deleteCell);
+
+    tbody.appendChild(row);
+  }
+
+  form.onsubmit = e => {
+    e.preventDefault();
+    const values = [
+      'name', 'capital', 'leader', 'language',
+      'currency', 'hdi', 'iq', 'temp',
+      'maleHeight', 'femaleHeight', 'vehicles', 'household'
+    ].map(id => document.getElementById(id).value);
+    addRow(values);
+    form.reset();
+    saveToStorage();
+  };
+
+  // Save on any edit
+  tbody.addEventListener('input', saveToStorage);
+
+  loadFromStorage();
+</script>
+
+</body>
+</html>
