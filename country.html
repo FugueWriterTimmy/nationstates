@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Country Stat Tracker</title>
+<title>Country Stat Tracker - Decimal Friendly</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -51,7 +51,7 @@
 </head>
 <body>
 
-<h1>Country Display</h1>
+<h1>World Country Stat Tracker</h1>
 
 <table id="countryTable" spellcheck="false">
   <thead>
@@ -97,35 +97,23 @@
   const form = document.getElementById('countryForm');
   const tbody = document.getElementById('countryBody');
 
-  // List of numeric columns indices (0-based)
-  // Adjust according to columns:
-  // Country(0), Capital(1), Leader(2), Language(3), Currency(4), HDI(5),
-  // IQ(6), Temp(7), MaleHeight(8), FemaleHeight(9), Vehicles(10), Household(11)
-  const numericCols = [4,5,6,7,8,9,10,11];
-
+  // Save raw text from each cell, exactly as typed, to localStorage
   function saveToStorage() {
     const data = [];
     tbody.querySelectorAll('tr').forEach(row => {
       const cells = Array.from(row.querySelectorAll('td')).slice(0, -1);
-      const rowData = cells.map((cell, i) => {
-        // If numeric col, parse float or save empty string
-        if (numericCols.includes(i)) {
-          const val = parseFloat(cell.textContent.trim());
-          return isNaN(val) ? '' : val.toString();
-        } else {
-          return cell.textContent.trim();
-        }
-      });
-      data.push(rowData);
+      data.push(cells.map(cell => cell.textContent));
     });
     localStorage.setItem('countries', JSON.stringify(data));
   }
 
+  // Load from localStorage and populate table
   function loadFromStorage() {
     const data = JSON.parse(localStorage.getItem('countries') || '[]');
     data.forEach(entry => addRow(entry));
   }
 
+  // Add row with editable cells and delete button
   function addRow(values) {
     const row = document.createElement('tr');
     values.forEach(value => {
@@ -149,6 +137,7 @@
     tbody.appendChild(row);
   }
 
+  // On form submit, add row and save
   form.onsubmit = e => {
     e.preventDefault();
     const values = [
@@ -161,7 +150,7 @@
     saveToStorage();
   };
 
-  // Save on any edit
+  // Save on any edits in table cells
   tbody.addEventListener('input', saveToStorage);
 
   loadFromStorage();
