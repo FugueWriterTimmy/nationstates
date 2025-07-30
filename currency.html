@@ -98,6 +98,11 @@
     .currency-item span {
       flex-grow: 1;
     }
+
+    .input-mode {
+      margin-top: 10px;
+      font-weight: normal;
+    }
   </style>
 </head>
 <body>
@@ -107,8 +112,18 @@
 
     <div class="currency-box">
       <h2>Add / Edit Currency</h2>
+
+      <label class="input-mode">
+        <input type="radio" name="inputMode" value="basePerCurrency" checked />
+        Input: How much Base per 1 Currency unit (Current)
+      </label>
+      <label class="input-mode">
+        <input type="radio" name="inputMode" value="currencyPerBase" />
+        Input: How much Currency per 1 Base unit (Inverse)
+      </label>
+
       <input id="currencyName" placeholder="Currency Name (e.g. ZorkCoin)" />
-      <input id="currencyValue" type="number" step="0.0001" placeholder="Value relative to Base (Base = 1)" />
+      <input id="currencyValue" type="number" step="0.0001" placeholder="Value relative to Base" />
       <button onclick="addOrUpdateCurrency()">Add or Update Currency</button>
     </div>
 
@@ -180,14 +195,20 @@
         row.className = "currency-item";
 
         const label = document.createElement("span");
-        label.textContent = `${name} = ${currencies[name]}`;
+        label.textContent = `${name}`;
 
         const editBtn = document.createElement("button");
         editBtn.textContent = "Edit";
         editBtn.className = "small-btn";
         editBtn.onclick = () => {
           document.getElementById("currencyName").value = name;
-          document.getElementById("currencyValue").value = currencies[name];
+          // Set value depending on input mode
+          const inputMode = document.querySelector('input[name="inputMode"]:checked').value;
+          let val = currencies[name];
+          if (inputMode === "currencyPerBase") {
+            val = 1 / val; // inverse if in currencyPerBase mode
+          }
+          document.getElementById("currencyValue").value = val;
         };
 
         const deleteBtn = document.createElement("button");
@@ -222,11 +243,17 @@
 
     function addOrUpdateCurrency() {
       const name = document.getElementById("currencyName").value.trim();
-      const value = parseFloat(document.getElementById("currencyValue").value);
+      let value = parseFloat(document.getElementById("currencyValue").value);
+      const inputMode = document.querySelector('input[name="inputMode"]:checked').value;
 
       if (!name || isNaN(value) || value <= 0) {
         alert("Please enter a valid name and a positive value.");
         return;
+      }
+
+      // Convert value if input mode is currencyPerBase (inverse)
+      if (inputMode === "currencyPerBase") {
+        value = 1 / value;
       }
 
       currencies[name] = value;
@@ -252,7 +279,7 @@
         if (to === from) continue;
         const result = (amount * currencies[from]) / currencies[to];
         const p = document.createElement("p");
-        p.textContent = `${amount} ${from} = ${result.toFixed(4)} ${to}`;
+        p.textContent = `${amount} ${from} = ${result.toFixed(2)} ${to}`;
         resultsBox.appendChild(p);
       }
     }
