@@ -1,87 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>NationStates HDI Calculator</title>
+<meta charset="UTF-8">
+<title>Nationstates HDI Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #f0f4f8;
-    max-width: 400px;
-    margin: 40px auto;
+    max-width: 500px;
+    margin: auto;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    background: #eef6fb;
   }
   label {
     display: block;
-    margin: 15px 0 5px;
+    margin: 10px 0 5px;
     font-weight: bold;
   }
   input[type="number"] {
     width: 100%;
     padding: 8px;
-    font-size: 1em;
-    border-radius: 4px;
-    border: 1px solid #ccc;
     box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #aaa;
   }
   button {
-    margin-top: 20px;
+    margin-top: 15px;
     width: 100%;
-    padding: 12px;
-    font-size: 1.1em;
+    padding: 10px;
+    font-size: 1em;
     background-color: #0077cc;
-    border: none;
     color: white;
-    border-radius: 6px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
   }
   button:hover {
     background-color: #005fa3;
   }
   .result {
-    margin-top: 25px;
-    font-size: 1.2em;
-    text-align: center;
-    font-weight: bold;
-    color: #333;
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    font-size: 1.1em;
   }
 </style>
 </head>
 <body>
 
-<h2>NationStates HDI Calculator</h2>
+<h2>HDI Calculator</h2>
 
-<label for="rank">Country Rank (1 = highest):</label>
-<input type="number" id="rank" min="1" step="1" />
+<label for="lifespan">Life Expectancy (years):</label>
+<input type="number" id="lifespan" min="20" max="120" step="0.01" />
 
-<label for="total">Total Number of Countries:</label>
-<input type="number" id="total" min="1" step="1" />
+<label for="income">Average Income (GNI per capita in USD):</label>
+<input type="number" id="income" min="100" step="0.01" />
+
+<label for="education">Education Rating (1-100):</label>
+<input type="number" id="education" min="1" max="100" step="0.1" />
 
 <button onclick="calculateHDI()">Calculate HDI</button>
 
 <div id="result" class="result" style="display:none;"></div>
 
 <script>
-  function calculateHDI() {
-    const rank = Number(document.getElementById('rank').value);
-    const total = Number(document.getElementById('total').value);
-    const resultDiv = document.getElementById('result');
+function calculateHDI() {
+  const lifespan = parseFloat(document.getElementById('lifespan').value);
+  const income = parseFloat(document.getElementById('income').value);
+  const education = parseFloat(document.getElementById('education').value);
 
-    if (!rank || !total || rank < 1 || total < 1 || rank > total) {
-      alert('Please enter valid numbers: rank ≥ 1, total ≥ rank.');
-      resultDiv.style.display = 'none';
-      return;
-    }
-
-    const hdi = 1 - (rank / total);
-    const hdiRounded = hdi.toFixed(3);
-
-    resultDiv.style.display = 'block';
-    resultDiv.textContent = `Your Country's HDI: ${hdiRounded}`;
+  if (isNaN(lifespan) || lifespan < 20 || lifespan > 120 ||
+      isNaN(income) || income < 100 ||
+      isNaN(education) || education < 1 || education > 100) {
+    alert('Please enter valid numbers within the allowed ranges.');
+    return;
   }
+
+  // Life Expectancy Index
+  const LEI = (lifespan - 20) / (85 - 20);
+
+  // Education Index
+  const EI = education / 100;
+
+  // Income Index
+  const II = (Math.log(income) - Math.log(100)) / (Math.log(750));
+
+  // HDI
+  const HDI = Math.cbrt(LEI * EI * II);
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `
+    <strong>Life Expectancy Index:</strong> ${LEI.toFixed(3)}<br/>
+    <strong>Education Index:</strong> ${EI.toFixed(3)}<br/>
+    <strong>Income Index:</strong> ${II.toFixed(3)}<br/>
+    <strong>HDI:</strong> ${HDI.toFixed(3)}
+  `;
+}
 </script>
 
 </body>
