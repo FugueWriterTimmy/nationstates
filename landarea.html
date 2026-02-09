@@ -86,7 +86,7 @@
     <h1>NationStates Land Area Calculator</h1>
 
     <div class="box">
-      <label for="population">Population</label>
+      <label for="population">Population (in millions)</label>
       <input id="population" type="number" placeholder="e.g. 128000000" />
 
       <label for="environment">Eco-Friendliness Rating (1–100)</label>
@@ -127,7 +127,7 @@
       }
 
       const landArea =
-        (population / 64) *
+        (population * 15625) *
         (1 + (environment - 50) / 100) *
         (1 / currency);
 
