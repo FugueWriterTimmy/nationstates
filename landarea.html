@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NationStates Land Area Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #eef2f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 12px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 1em;
+    }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      background: #2d89ef;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1c6ed2;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f0f8ff;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .formula {
+      margin-top: 15px;
+      font-size: 0.9em;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>NationStates Land Area Calculator</h1>
+
+    <div class="box">
+      <label for="population">Population</label>
+      <input id="population" type="number" placeholder="e.g. 128000000" />
+
+      <label for="environment">Environment Rating (1–100)</label>
+      <input id="environment" type="number" min="1" max="100" placeholder="e.g. 72" />
+
+      <label for="currency">Currency Value (relative to base)</label>
+      <input id="currency" type="number" step="0.0001" placeholder="e.g. 1.25" />
+
+      <button onclick="calculate()">Calculate Land Area</button>
+
+      <div id="result"></div>
+
+      <div class="formula">
+        Formula:<br>
+        (population ÷ 64) × (1 + (environment − 50) ÷ 100) × (1 ÷ currency)
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const population = parseFloat(document.getElementById("population").value);
+      const environment = parseFloat(document.getElementById("environment").value);
+      const currency = parseFloat(document.getElementById("currency").value);
+      const resultBox = document.getElementById("result");
+
+      if (
+        isNaN(population) ||
+        isNaN(environment) ||
+        isNaN(currency) ||
+        population <= 0 ||
+        environment < 1 ||
+        environment > 100 ||
+        currency <= 0
+      ) {
+        resultBox.textContent = "Please enter valid values in all fields.";
+        return;
+      }
+
+      const landArea =
+        (population / 64) *
+        (1 + (environment - 50) / 100) *
+        (1 / currency);
+
+      resultBox.textContent =
+        "Calculated Land Area: " + landArea.toLocaleString(undefined, {
+          maximumFractionDigits: 2
+        });
+    }
+  </script>
+
+</body>
+</html>
