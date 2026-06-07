@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>War Simulator</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: #fff; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .flex { display: flex; gap: 20px; }
+        .col { flex: 1; background: #2a2a2a; padding: 15px; border-radius: 8px; }
+        h3 { margin-top: 0; color: #4caf50; }
+        label { display: block; margin: 10px 0 5px; font-size: 14px; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; }
+        button { width: 100%; padding: 12px; margin-top: 20px; background: #4caf50; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #45a049; }
+        #result { margin-top: 25px; padding: 15px; background: #333; border-radius: 8px; text-align: center; font-size: 18px; border-left: 5px solid #4caf50; }
+    </style>
+</head>
+<body>
+
+    <h2>⚔️ NationStates Combat Calculator</h2>
+    <p>Uses the Advanced Cyber & Tech formula: <em>TMP = Pop * Conv Avg * Tech Avg</em></p>
+
+    <div class="flex">
+        <!-- Nation 1 -->
+        <div class="col" id="n1">
+            <h3>Nation 1</h3>
+            <label>Name</label><input type="text" value="Nation A" class="name">
+            <label>Population (Millions)</label><input type="number" value="1000" class="pop">
+            <label>Defense Forces</label><select class="m1"><option value="2.5">95th–99th Percentile</option><option value="1.8" selected>85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5">0–24th Percentile</option></select>
+            <label>Weaponization</label><select class="m2"><option value="2.5">95th–99th Percentile</option><option value="1.8" selected>85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5">0–24th Percentile</option></select>
+            <label>Manufacturing</label><select class="m3"><option value="2.5">95th–99th Percentile</option><option value="1.8" selected>85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5">0–24th Percentile</option></select>
+            <label>Info Tech</label><select class="t1"><option value="2.5" selected>95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5">0–24th Percentile</option></select>
+            <label>Scientific Research</label><select class="t2"><option value="2.5" selected>95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5">0–24th Percentile</option></select>
+        </div>
+
+        <!-- Nation 2 -->
+        <div class="col" id="n2">
+            <h3>Nation 2</h3>
+            <label>Name</label><input type="text" value="Nation B" class="name">
+            <label>Population (Millions)</label><input type="number" value="10000" class="pop">
+            <label>Defense Forces</label><select class="m1"><option value="2.5">95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5" selected>0–24th Percentile</option></select>
+            <label>Weaponization</label><select class="m2"><option value="2.5">95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5" selected>0–24th Percentile</option></select>
+            <label>Manufacturing</label><select class="m3"><option value="2.5">95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5" selected>0–24th Percentile</option></select>
+            <label>Info Tech</label><select class="t1"><option value="2.5">95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5" selected>0–24th Percentile</option></select>
+            <label>Scientific Research</label><select class="t2"><option value="2.5">95th–99th Percentile</option><option value="1.8">85th–94th Percentile</option><option value="1.2">70th–84th Percentile</option><option value="1.0">25th–69th Percentile</option><option value="0.5" selected>0–24th Percentile</option></select>
+        </div>
+    </div>
+
+    <button onclick="fight()">Simulate War</button>
+    <div id="result">Fill in the data and click Simulate.</div>
+
+    <script>
+        function getTMP(id) {
+            const el = document.getElementById(id);
+            const pop = parseFloat(el.querySelector('.pop').value) || 0;
+            const conv = (parseFloat(el.querySelector('.m1').value) + parseFloat(el.querySelector('.m2').value) + parseFloat(el.querySelector('.m3').value)) / 3;
+            const tech = (parseFloat(el.querySelector('.t1').value) + parseFloat(el.querySelector('.t2').value)) / 2;
+            return { name: el.querySelector('.name').value, tmp: Math.round(pop * conv * tech) };
+        }
+
+        function fight() {
+            const n1 = getTMP('n1'), n2 = getTMP('n2');
+            let txt = `📊 <strong>Results:</strong><br>${n1.name}: ${n1.tmp.toLocaleString()} TMP<br>${n2.name}: ${n2.tmp.toLocaleString()} TMP<br><br>`;
+            if (n1.tmp === n2.tmp) txt += "🏁 It's a grueling, endless stalemate!";
+            else txt += `🏆 <strong>${n1.tmp > n2.tmp ? n1.name : n2.name} wins the war!</strong>`;
+            document.getElementById('result').innerHTML = txt;
+        }
+    </script>
+</body>
+</html>
